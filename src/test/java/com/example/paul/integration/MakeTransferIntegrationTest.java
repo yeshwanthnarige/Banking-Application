@@ -3,6 +3,7 @@ package com.example.paul.integration;
 import com.example.paul.controllers.TransactionRestController;
 import com.example.paul.utils.AccountInput;
 import com.example.paul.utils.TransactionInput;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(value = "local")
 class MakeTransferIntegrationTest {

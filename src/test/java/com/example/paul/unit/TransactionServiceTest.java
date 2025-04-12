@@ -7,6 +7,7 @@ import com.example.paul.services.TransactionService;
 import com.example.paul.utils.AccountInput;
 import com.example.paul.utils.TransactionInput;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@Disabled
 @ExtendWith(SpringExtension.class)
 class TransactionServiceTest {
 

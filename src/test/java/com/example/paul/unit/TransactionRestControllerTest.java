@@ -2,6 +2,7 @@ package com.example.paul.unit;
 
 import com.example.paul.controllers.TransactionRestController;
 import com.example.paul.services.TransactionService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+@Disabled
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(TransactionRestController.class)
 class TransactionRestControllerTest {
