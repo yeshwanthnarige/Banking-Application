@@ -28,7 +28,7 @@ Import the Postman collection file into the application or copy the request body
 
 ### How to test
 
-1. Create account
+1. Create Postman account
    > Use create account API to create an account by providing a `bankName` and `ownerName`
    >
    > ![Create Account](screenshots/create_account.png)
