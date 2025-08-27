@@ -9,6 +9,8 @@ public class DepositInput {
     @NotBlank(message = "Target account no is mandatory")
     private String targetAccountNo;
 
+    // add banking info of each user & fecting;
+
     // Prevent fraudulent transfers attempting to abuse currency conversion errors
     @Positive(message = "Transfer amount must be positive")
     private double amount;
