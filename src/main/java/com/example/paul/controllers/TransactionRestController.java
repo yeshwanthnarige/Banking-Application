@@ -99,6 +99,7 @@ public class TransactionRestController {
                 return new ResponseEntity<>(SUCCESS, HttpStatus.OK);
             }
         } else {
+            // returning invalid search & bad request
             return new ResponseEntity<>(INVALID_SEARCH_CRITERIA, HttpStatus.BAD_REQUEST);
         }
     }
