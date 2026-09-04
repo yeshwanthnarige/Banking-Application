@@ -1,7 +1,10 @@
 package com.example.paul.utils;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Positive;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class DepositInput {
@@ -12,8 +15,10 @@ public class DepositInput {
     // add banking info of each user & fecting ;
 
     // Prevent fraudulent transfers attempting to abuse currency conversion errors
-    @Positive(message = "Transfer amount must be positive")
-    private double amount;
+    @NotNull(message = "Transfer amount is mandatory")
+    @DecimalMin(value = "0.01", message = "Transfer amount must be at least 0.01")
+    @Digits(integer = 17, fraction = 2, message = "Transfer amount must have at most 2 decimal places")
+    private BigDecimal amount;
 
     public DepositInput() {
     }
@@ -26,11 +31,11 @@ public class DepositInput {
         this.targetAccountNo = targetAccountNo;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 

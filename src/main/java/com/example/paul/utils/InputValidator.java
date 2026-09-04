@@ -5,22 +5,29 @@ import com.example.paul.constants.constants;
 public class InputValidator {
 
     public static boolean isSearchCriteriaValid(AccountInput accountInput) {
-        return constants.SORT_CODE_PATTERN.matcher(accountInput.getSortCode()).find() &&
-                constants.ACCOUNT_NUMBER_PATTERN.matcher(accountInput.getAccountNumber()).find();
+        return accountInput != null &&
+                accountInput.getSortCode() != null &&
+                accountInput.getAccountNumber() != null &&
+                constants.SORT_CODE_PATTERN.matcher(accountInput.getSortCode()).matches() &&
+                constants.ACCOUNT_NUMBER_PATTERN.matcher(accountInput.getAccountNumber()).matches();
     }
 
     public static boolean isAccountNoValid(String accountNo) {
-        return constants.ACCOUNT_NUMBER_PATTERN.matcher(accountNo).find();
+        return accountNo != null && constants.ACCOUNT_NUMBER_PATTERN.matcher(accountNo).matches();
     }
 
     public static boolean isCreateAccountCriteriaValid(CreateAccountInput createAccountInput) {
-        return (!createAccountInput.getBankName().isBlank() && !createAccountInput.getOwnerName().isBlank());
+        return createAccountInput != null &&
+                createAccountInput.getBankName() != null &&
+                createAccountInput.getOwnerName() != null &&
+                !createAccountInput.getBankName().isBlank() &&
+                !createAccountInput.getOwnerName().isBlank();
     }
 
     public static boolean isSearchTransactionValid(TransactionInput transactionInput) {
         // TODO Add checks for large amounts; consider past history of account holder and location of transfers
 
-        if (!isSearchCriteriaValid(transactionInput.getSourceAccount()))
+        if (transactionInput == null || !isSearchCriteriaValid(transactionInput.getSourceAccount()))
             return false;
 
         if (!isSearchCriteriaValid(transactionInput.getTargetAccount()))
@@ -29,6 +36,6 @@ public class InputValidator {
         if (transactionInput.getSourceAccount().equals(transactionInput.getTargetAccount()))
             return false;
 
-        return true;
+        return transactionInput.getAmount() != null && transactionInput.getAmount().signum() > 0;
     }
 }
