@@ -1,13 +1,14 @@
 package com.example.paul.models;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 // TODO Add support for Bank charges, currency conversion, setup repeat payment/ standing order
 @Entity
 @Table(name = "transaction", schema = "online_bank")
 
-@SequenceGenerator(name = "transaction_seq", sequenceName = "transaction_sequence", schema = "online_bank", initialValue = 5)
+@SequenceGenerator(name = "transaction_seq", sequenceName = "transaction_sequence", schema = "online_bank", initialValue = 5, allocationSize = 1)
 public class Transaction {
 
     @Id
@@ -19,14 +20,18 @@ public class Transaction {
 
     private long targetAccountId;
 
+    @Column(length = 50, nullable = false)
     private String targetOwnerName;
 
-    private double amount;
+    @Column(precision = 19, scale = 2, nullable = false)
+    private BigDecimal amount;
 
+    @Column(nullable = false)
     private LocalDateTime initiationDate;
 
     private LocalDateTime completionDate;
 
+    @Column(length = 255)
     private String reference;
 
     private Double latitude;
@@ -59,10 +64,10 @@ public class Transaction {
     public void setTargetOwnerName(String targetOwnerName) {
         this.targetOwnerName = targetOwnerName;
     }
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
-    public void setAmount(double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
     public LocalDateTime getInitiationDate() {
