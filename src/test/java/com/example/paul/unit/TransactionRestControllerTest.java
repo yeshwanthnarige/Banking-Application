@@ -1,8 +1,8 @@
 package com.example.paul.unit;
 
 import com.example.paul.controllers.TransactionRestController;
+import com.example.paul.services.AccountService;
 import com.example.paul.services.TransactionService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-@Disabled
+import static org.mockito.BDDMockito.given;
+
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(TransactionRestController.class)
 class TransactionRestControllerTest {
@@ -24,6 +25,9 @@ class TransactionRestControllerTest {
 
     @MockBean
     private TransactionService transactionService;
+
+    @MockBean
+    private AccountService accountService;
 
     @Test
     void givenMissingInput_whenMakeTransfer_thenVerifyBadRequest() throws Exception {
@@ -42,9 +46,12 @@ class TransactionRestControllerTest {
 
     @Test
     void givenNoAccountForInput_whenMakeTransfer_thenVerifyOk() throws Exception {
+        given(transactionService.makeTransfer(org.mockito.ArgumentMatchers.any())).willReturn(false);
+
         mvc.perform(MockMvcRequestBuilders.post("/api/v1/transactions")
                 .content("{\"sourceAccount\": {\"sortCode\": \"53-68-92\", \"accountNumber\": \"73084635\"}, \"targetAccount\": {\"sortCode\": \"65-93-37\", \"accountNumber\": \"21956204\"}, \"amount\": 105.0, \"reference\": \"My ref\", \"latitude\": 66.23423423, \"longitude\": 105.234234}")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string("false"));
     }
 }

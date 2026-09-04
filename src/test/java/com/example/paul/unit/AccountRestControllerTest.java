@@ -3,7 +3,6 @@ package com.example.paul.unit;
 import com.example.paul.controllers.AccountRestController;
 import com.example.paul.models.Account;
 import com.example.paul.services.AccountService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.math.BigDecimal;
+
 import static org.mockito.BDDMockito.given;
 
-@Disabled
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AccountRestController.class)
 class AccountRestControllerTest {
@@ -44,24 +44,28 @@ class AccountRestControllerTest {
     }
 
     @Test
-    void givenNoAccountForInput_whenCheckingBalance_thenVerifyNoContent() throws Exception {
-        given(accountService.getAccount(null, null)).willReturn(null);
+    void givenNoAccountForInput_whenCheckingBalance_thenVerifyMessage() throws Exception {
+        given(accountService.getAccount("53-68-92", "78901234")).willReturn(null);
 
         mvc.perform(MockMvcRequestBuilders.post("/api/v1/accounts")
                 .content("{\"sortCode\": \"53-68-92\",\"accountNumber\": \"78901234\"}")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(
+                        "Unable to find an account matching this sort code and account number"));
     }
 
     @Test
     void givenAccountDetails_whenCheckingBalance_thenVerifyOk() throws Exception {
-        given(accountService.getAccount(null, null)).willReturn(
-                new Account(1L, "53-68-92", "78901234", 10.1, "Some Bank", "John"));
+        given(accountService.getAccount("53-68-92", "78901234")).willReturn(
+                new Account(1L, "53-68-92", "78901234", new BigDecimal("10.10"), "Some Bank", "John"));
 
         mvc.perform(MockMvcRequestBuilders.post("/api/v1/accounts")
                 .content("{\"sortCode\": \"53-68-92\",\"accountNumber\": \"78901234\"}")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isNoContent())
-                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.currentBalance").value(10.10))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.ownerName").value("John"));
     }
 }

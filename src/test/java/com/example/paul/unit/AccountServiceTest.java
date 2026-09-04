@@ -6,19 +6,19 @@ import com.example.paul.repositories.AccountRepository;
 import com.example.paul.repositories.TransactionRepository;
 import com.example.paul.services.AccountService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@Disabled
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
 
@@ -36,7 +36,7 @@ class AccountServiceTest {
 
     @Test
     void shouldReturnAccountBySortCodeAndAccountNumberWhenPresent() {
-        var account = new Account(1L, "53-68-92", "78901234", 10.1, "Some Bank", "John");
+        var account = new Account(1L, "53-68-92", "78901234", new BigDecimal("10.10"), "Some Bank", "John");
         when(accountRepository.findBySortCodeAndAccountNumber("53-68-92", "78901234"))
                 .thenReturn(Optional.of(account));
 
@@ -49,7 +49,7 @@ class AccountServiceTest {
 
     @Test
     void shouldReturnTransactionsForAccount() {
-        var account = new Account(1L, "53-68-92", "78901234", 10.1, "Some Bank", "John");
+        var account = new Account(1L, "53-68-92", "78901234", new BigDecimal("10.10"), "Some Bank", "John");
         when(accountRepository.findBySortCodeAndAccountNumber("53-68-92", "78901234"))
                 .thenReturn(Optional.of(account));
         var transaction1 = new Transaction();
@@ -77,13 +77,35 @@ class AccountServiceTest {
 
     @Test
     void shouldReturnAccountByAccountNumberWhenPresent() {
+        var account = new Account(1L, "53-68-92", "78901234", new BigDecimal("10.10"), "Some Bank", "John");
+        when(accountRepository.findByAccountNumber("78901234")).thenReturn(Optional.of(account));
+
+        var result = underTest.getAccount("78901234");
+
+        assertThat(result).isSameAs(account);
     }
 
     @Test
     void shouldReturnNullWhenAccountByAccountNotFound() {
+        when(accountRepository.findByAccountNumber("78901234")).thenReturn(Optional.empty());
+
+        var result = underTest.getAccount("78901234");
+
+        assertThat(result).isNull();
     }
 
     @Test
     void shouldCreateAccount() {
+        when(accountRepository.save(org.mockito.ArgumentMatchers.any(Account.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = underTest.createAccount("Some Bank", "John");
+
+        assertThat(result.getBankName()).isEqualTo("Some Bank");
+        assertThat(result.getOwnerName()).isEqualTo("John");
+        assertThat(result.getCurrentBalance()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(result.getSortCode()).matches("\\d{2}-\\d{2}-\\d{2}");
+        assertThat(result.getAccountNumber()).matches("\\d{8}");
+        verify(accountRepository).save(result);
     }
 }
