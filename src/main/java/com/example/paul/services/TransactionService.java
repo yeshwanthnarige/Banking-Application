@@ -5,10 +5,12 @@ import com.example.paul.models.Account;
 import com.example.paul.models.Transaction;
 import com.example.paul.repositories.AccountRepository;
 import com.example.paul.repositories.TransactionRepository;
+import com.example.paul.utils.InputValidator;
 import com.example.paul.utils.TransactionInput;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -19,11 +21,14 @@ import java.util.Optional;
 @Service
 public class TransactionService {
 
-    @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+    public TransactionService(AccountRepository accountRepository,
+                              TransactionRepository transactionRepository) {
+        this.accountRepository = accountRepository;
+        this.transactionRepository = transactionRepository;
+    }
 
     /**
      * Initiates a money transfer from a source account to a target account.
@@ -32,8 +37,13 @@ public class TransactionService {
      * @param transactionInput the transaction details including source, target, and amount
      * @return true if the transfer was successful, false otherwise
      */
+    @Transactional
     public boolean makeTransfer(TransactionInput transactionInput) {
         // TODO refactor synchronous implementation with messaging queue
+        if (!InputValidator.isSearchTransactionValid(transactionInput)) {
+            return false;
+        }
+
         String sourceSortCode = transactionInput.getSourceAccount().getSortCode();
         String sourceAccountNumber = transactionInput.getSourceAccount().getAccountNumber();
         Optional<Account> sourceAccount = accountRepository
@@ -58,7 +68,8 @@ public class TransactionService {
                 transaction.setLatitude(transactionInput.getLatitude());
                 transaction.setLongitude(transactionInput.getLongitude());
 
-                updateAccountBalance(sourceAccount.get(), transactionInput.getAmount(), ACTION.WITHDRAW);
+                updateBalance(sourceAccount.get(), transactionInput.getAmount(), ACTION.WITHDRAW);
+                updateBalance(targetAccount.get(), transactionInput.getAmount(), ACTION.DEPOSIT);
                 transactionRepository.save(transaction);
 
                 return true;
@@ -74,11 +85,20 @@ public class TransactionService {
      * @param amount  the amount to withdraw or deposit
      * @param action  the action to perform (WITHDRAW or DEPOSIT)
      */
-    public void updateAccountBalance(Account account, double amount, ACTION action) {
+    @Transactional
+    public void updateAccountBalance(Account account, BigDecimal amount, ACTION action) {
+        if (account == null || amount == null || amount.signum() <= 0 || action == null) {
+            throw new IllegalArgumentException("Account, positive amount, and action are required");
+        }
+
+        updateBalance(account, amount, action);
+    }
+
+    private void updateBalance(Account account, BigDecimal amount, ACTION action) {
         if (action == ACTION.WITHDRAW) {
-            account.setCurrentBalance((account.getCurrentBalance() - amount));
+            account.setCurrentBalance(account.getCurrentBalance().subtract(amount));
         } else if (action == ACTION.DEPOSIT) {
-            account.setCurrentBalance((account.getCurrentBalance() + amount));
+            account.setCurrentBalance(account.getCurrentBalance().add(amount));
         }
         accountRepository.save(account);
     }
@@ -91,7 +111,8 @@ public class TransactionService {
      * @param accountBalance the current balance of the account
      * @return true if sufficient funds are available, false otherwise
      */
-    public boolean isAmountAvailable(double amount, double accountBalance) {
-        return (accountBalance - amount) > 0;
+    public boolean isAmountAvailable(BigDecimal amount, BigDecimal accountBalance) {
+        return amount != null && accountBalance != null &&
+                amount.signum() > 0 && accountBalance.compareTo(amount) >= 0;
     }
 }
